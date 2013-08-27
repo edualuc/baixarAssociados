@@ -4,22 +4,18 @@
  */
 package sugadordedados;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
-import javax.swing.text.ElementIterator;
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 /**
  *
@@ -30,7 +26,7 @@ public class Sugador {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // configurar Baixador
         //Scanner entrada = new Scanner(System.in);
         
@@ -39,59 +35,62 @@ public class Sugador {
         
         // Baixar páginas
         
-        String nomeDoArquivo = "D:\\trabalho\\amcham_bookyear\\teste1\\Yearbook_agronegocio.htm";
+        File input = new File("D:\\trabalho\\amcham_bookyear\\teste1\\Yearbook_agronegocio.htm");
+        
         // Parser Html retorna dados
-        String paginaHtml = "";
-        FileReader arquivo;
-        Reader arquivoSalvo;
-        String linha = "";
-        HTMLEditorKit kit = new HTMLEditorKit(); 
-        HTMLDocument doc = (HTMLDocument) kit.createDefaultDocument(); 
-        doc.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
-        try {
-            arquivo = new FileReader(nomeDoArquivo);
-            arquivoSalvo = new BufferedReader(arquivo);
-            kit.read(arquivoSalvo, doc, 0);
-            //linha = arquivoSalvo.readLine();
-            /*
-            while(linha != null) { 
-                paginaHtml += linha;
-                linha = arquivoSalvo.readLine();
-            }*/
-        } catch (FileNotFoundException ex) {
-            System.err.printf("Erro na abertura da arquivo: %s\n", ex.getMessage());
-        } catch (IOException ex) {
-            System.err.printf("Erro na leitura do arquivo: %s\n", ex.getMessage());
-        } catch (BadLocationException ex) {
-            System.err.printf("Erro na leitura do arquivo: %s\n", ex.getMessage());
-        }
-        
-        //System.out.println(paginaHtml);
-        
-        //URL url = new URL( "http://java.sun.com" ); 
-        //Reader HTMLReader = new InputStreamReader(url.openConnection().getInputStream());
-        //kit.read(HTMLReader, doc, 0);
-        
+        Document documento = Jsoup.parse(input, "UTF-8", "http://www.amcham.com.br/yearbook/2013/");
 
-        //  Get an iterator for all HTML tags.
-        ElementIterator it = new ElementIterator(doc); 
-        Element elem; 
-        elem = it.next();
-        while( elem != null  )
-        { 
-            if( elem.getName().equals("div") )
-            { 
-                String s = (String) elem.getAttributes().getAttribute(HTML.Attribute.CLASS);
-                if( s != null ) {
-                    if (elem.getAttributes().getAttribute(HTML.Attribute.CLASS).equals("party-name")) {
-                        System.out.println("----" + elem);
-                    }
-                    //System.out.println(s);
-                }
-            } 
-            elem = it.next();
-        }
+        //documento = Jsoup,.parse(paginaHtml);
+        Element registros = documento.getElementById("associados");
+        
+        ArrayList<Map> listaRegistros = extrairRegistros(registros);
+        
+        /*for (Map associado : listaRegistros ) {
+            System.out.println(associado.toString());
+        }*/
         // Gravar dados permanentemente
+        String outputFile = "users.csv";
+        //gravarArquivo(outputFile, listaRegistros);
+    }
+
+    private static ArrayList<Map> extrairRegistros(Element registros) {
+        ArrayList<Map> listaRegistros = new ArrayList<>();
+        Map<String, String> registro = new HashMap();
+        ArrayList<String> campos = new ArrayList<>();
+        campos.add("party-name");
+        campos.add("regional");
+        campos.add("telefone");
+        campos.add("endereco");
+        campos.add("website");
+        campos.add("email");
+        campos.add("naics");
+        
+        Elements associados = (Elements) registros.getElementsByClass("associado");
+        for (Element associado : associados) {
+            for (String nomeCampo : campos) {
+                registro.put(nomeCampo, associado.getElementsByClass(nomeCampo).text());
+            }
+            listaRegistros.add(registro);
+            registro = new HashMap();
+        }
+        return listaRegistros;
+    }
+
+    private static void gravarArquivo(String outputFile, ArrayList<Map> registros) {
+		
+        // before we open the file check to see if it already exists
+        boolean alreadyExists = new File(outputFile).exists();
+	
+        FileWriter arquivo;
+        try {
+            arquivo = new FileWriter(outputFile);
+            for( Map registro : registros) {
+                arquivo.append(registro.toString());
+                arquivo.append("\n");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Sugador.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
                               
