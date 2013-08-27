@@ -24,13 +24,14 @@ import org.jsoup.select.Elements;
 public class Sugador {
     static ArrayList<String> campos = new ArrayList<>();
     static String outputFile = "resultado.csv";
+    private static final String classAssociado = "associado";
+    private static final String separador = ";";
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
         // configurar Baixador
-        //Scanner entrada = new Scanner(System.in);
         campos.add("party-name");
         campos.add("regional");
         campos.add("telefone");
@@ -38,46 +39,49 @@ public class Sugador {
         campos.add("website");
         campos.add("email");
         campos.add("naics");
-        
+        //Scanner entrada = new Scanner(System.in);
         //System.out.println("Digite as configuracoes:");
         //String configuracao = entrada.nextLine();
         
-        // Baixar páginas
+        /*
+         * Baixar páginas
+         */
+
+        
         
         File input = new File("D:\\trabalho\\amcham_bookyear\\teste1\\Yearbook_agronegocio.htm");
         
-        // Parser Html retorna dados
-        Document documento = Jsoup.parse(input, "UTF-8", "http://www.amcham.com.br/yearbook/2013/");
-
-        //documento = Jsoup,.parse(paginaHtml);
-        Element registros = documento.getElementById("associados");
+        /*
+         * Parser Html retorna dados
+         */
         
+        Document documento = Jsoup.parse(input, "UTF-8", "http://www.amcham.com.br/yearbook/2013/");
+        Element registros = documento.getElementById("associados");
         ArrayList<Map> listaRegistros = extrairRegistros(registros);
         
-        /*for (Map associado : listaRegistros ) {
-            System.out.println(associado.toString());
-        }*/
-        // Gravar dados permanentemente
+        /*
+         * Gravar dados permanentemente
+         */
         gravarArquivo(outputFile, listaRegistros);
     }
 
-    private static ArrayList<Map> extrairRegistros(Element registros) {
+    private static ArrayList<Map> extrairRegistros(Element bodyHtml) {
         ArrayList<Map> listaRegistros = new ArrayList<>();
-        Map<String, String> registro = new HashMap();
+        Map<String, String> registro;
         
-        Elements associados = (Elements) registros.getElementsByClass("associado");
+        Elements associados = (Elements) bodyHtml.getElementsByClass(classAssociado);
+        
         for (Element associado : associados) {
+            registro = new HashMap();
             for (String nomeCampo : campos) {
                 registro.put(nomeCampo, associado.getElementsByClass(nomeCampo).text());
             }
             listaRegistros.add(registro);
-            registro = new HashMap();
         }
         return listaRegistros;
     }
 
     private static void gravarArquivo(String outputFile, ArrayList<Map> registros) {
-	String separador = ";";
         FileWriter arquivo;
         try {
             arquivo = new FileWriter(outputFile);
@@ -97,6 +101,8 @@ public class Sugador {
             arquivo.close();
         } catch (IOException ex) {
             Logger.getLogger(Sugador.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println(ex.getMessage());
+            System.err.println(ex.getStackTrace());
         }
     }
 }
