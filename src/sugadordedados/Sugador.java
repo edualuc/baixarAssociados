@@ -22,6 +22,8 @@ import org.jsoup.select.Elements;
  * @author eduardo
  */
 public class Sugador {
+    static ArrayList<String> campos = new ArrayList<>();
+    static String outputFile = "resultado.csv";
 
     /**
      * @param args the command line arguments
@@ -29,6 +31,13 @@ public class Sugador {
     public static void main(String[] args) throws IOException {
         // configurar Baixador
         //Scanner entrada = new Scanner(System.in);
+        campos.add("party-name");
+        campos.add("regional");
+        campos.add("telefone");
+        campos.add("endereco");
+        campos.add("website");
+        campos.add("email");
+        campos.add("naics");
         
         //System.out.println("Digite as configuracoes:");
         //String configuracao = entrada.nextLine();
@@ -49,21 +58,12 @@ public class Sugador {
             System.out.println(associado.toString());
         }*/
         // Gravar dados permanentemente
-        String outputFile = "users.csv";
-        //gravarArquivo(outputFile, listaRegistros);
+        gravarArquivo(outputFile, listaRegistros);
     }
 
     private static ArrayList<Map> extrairRegistros(Element registros) {
         ArrayList<Map> listaRegistros = new ArrayList<>();
         Map<String, String> registro = new HashMap();
-        ArrayList<String> campos = new ArrayList<>();
-        campos.add("party-name");
-        campos.add("regional");
-        campos.add("telefone");
-        campos.add("endereco");
-        campos.add("website");
-        campos.add("email");
-        campos.add("naics");
         
         Elements associados = (Elements) registros.getElementsByClass("associado");
         for (Element associado : associados) {
@@ -77,17 +77,24 @@ public class Sugador {
     }
 
     private static void gravarArquivo(String outputFile, ArrayList<Map> registros) {
-		
-        // before we open the file check to see if it already exists
-        boolean alreadyExists = new File(outputFile).exists();
-	
+	String separador = ";";
         FileWriter arquivo;
         try {
             arquivo = new FileWriter(outputFile);
-            for( Map registro : registros) {
-                arquivo.append(registro.toString());
-                arquivo.append("\n");
+            for (String nomeCampo : campos) {
+                arquivo.append(nomeCampo);
+                arquivo.append(separador);
             }
+            for( Map<String, String> registro : registros ) {
+                arquivo.append("\n");
+                for (String nomeCampo : campos) {
+                //for (Object campo : registro.entrySet()) {
+                    arquivo.append(registro.get(nomeCampo));
+                    arquivo.append(separador);
+                }
+            }
+            arquivo.flush();
+            arquivo.close();
         } catch (IOException ex) {
             Logger.getLogger(Sugador.class.getName()).log(Level.SEVERE, null, ex);
         }
