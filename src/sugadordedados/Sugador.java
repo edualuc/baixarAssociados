@@ -47,15 +47,17 @@ public class Sugador {
          * Baixar páginas
          */
 
+        File paginaBaixada = new File("D:\\trabalho\\amcham_bookyear\\teste1\\Yearbook_agronegocio.htm");
         
+        String filtro = "A";
         
-        File input = new File("D:\\trabalho\\amcham_bookyear\\teste1\\Yearbook_agronegocio.htm");
+        paginaBaixada = baixarPagina(filtro);
         
         /*
          * Parser Html retorna dados
          */
         
-        Document documento = Jsoup.parse(input, "UTF-8", "http://www.amcham.com.br/yearbook/2013/");
+        Document documento = Jsoup.parse(paginaBaixada, "UTF-8", "http://www.amcham.com.br/yearbook/2013/");
         Element registros = documento.getElementById("associados");
         ArrayList<Map> listaRegistros = extrairRegistros(registros);
         
@@ -104,6 +106,10 @@ public class Sugador {
             System.err.println(ex.getMessage());
             System.err.println(ex.getStackTrace());
         }
+    }
+
+    private static File baixarPagina(String filtro) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
                               
