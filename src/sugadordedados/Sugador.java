@@ -1,12 +1,15 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * 02-09-2013
+ * @edualuc
  */
 package sugadordedados;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,25 +49,33 @@ public class Sugador {
         /*
          * Baixar páginas
          */
-
-        File paginaBaixada = new File("D:\\trabalho\\amcham_bookyear\\teste1\\Yearbook_agronegocio.htm");
+        File paginasBaixadas[], pastaComPaginas;
         
-        String filtro = "A";
+        //paginaBaixada = baixarPagina(filtro);
         
-        paginaBaixada = baixarPagina(filtro);
+        pastaComPaginas = new File("D:\\trabalho\\amcham_bookyear\\arquivos\\");
         
+        paginasBaixadas = pastaComPaginas.listFiles();
         /*
          * Parser Html retorna dados
          */
-        
-        Document documento = Jsoup.parse(paginaBaixada, "UTF-8", "http://www.amcham.com.br/yearbook/2013/");
-        Element registros = documento.getElementById("associados");
-        ArrayList<Map> listaRegistros = extrairRegistros(registros);
-        
+        for(File paginaBaixada : paginasBaixadas) {
+            
+            Document documento = Jsoup.parse(paginaBaixada, "UTF-8");
+            Element registros = documento.getElementById("associados");
+            if (registros != null) {
+                ArrayList<Map> listaRegistros = extrairRegistros(registros);
+
         /*
          * Gravar dados permanentemente
          */
-        gravarArquivo(outputFile, listaRegistros);
+                gravarArquivo(paginaBaixada.getName(), listaRegistros);
+            } else {
+                System.err.print("Arquivo vazio: ");
+                System.err.println(paginaBaixada.getName());
+            }
+        }
+        
     }
 
     private static ArrayList<Map> extrairRegistros(Element bodyHtml) {
@@ -86,7 +97,7 @@ public class Sugador {
     private static void gravarArquivo(String outputFile, ArrayList<Map> registros) {
         FileWriter arquivo;
         try {
-            arquivo = new FileWriter(outputFile);
+            arquivo = new FileWriter("arquivos/"+outputFile+".csv");
             for (String nomeCampo : campos) {
                 arquivo.append(nomeCampo);
                 arquivo.append(separador);
@@ -109,7 +120,19 @@ public class Sugador {
     }
 
     private static File baixarPagina(String filtro) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        HttpURLConnection con;
+        try {
+            con = (HttpURLConnection) new URL("http://www.amcham.com.br/").openConnection();
+            con.setRequestMethod("POST");
+            //con.getOutputStream().write("LOGIN".getBytes("UTF-8"));
+            con.getInputStream();   
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Sugador.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Sugador.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
                               
