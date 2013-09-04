@@ -4,9 +4,11 @@
  */
 package sugadordedados;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -95,9 +97,10 @@ public class Sugador {
     }
 
     private static void gravarArquivo(String outputFile, ArrayList<Map> registros) {
-        FileWriter arquivo;
+        BufferedWriter arquivo;
         try {
-            arquivo = new FileWriter("arquivos/"+outputFile+".csv");
+            arquivo = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("arquivos/"+outputFile+".csv"),"UTF-8"));
+            
             for (String nomeCampo : campos) {
                 arquivo.append(nomeCampo);
                 arquivo.append(separador);
